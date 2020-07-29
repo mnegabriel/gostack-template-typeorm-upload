@@ -13,36 +13,42 @@ const transactionsRouter = Router();
 
 transactionsRouter.get('/', async (request, response) => {
   const transactionsRepository = getCustomRepository(TransactionsRepository);
-  const transactions = await transactionsRepository.find();
+  const allTransactions = await transactionsRepository.find();
 
   const categoriesRepository = getRepository(Category);
   const categories = await categoriesRepository.find();
 
-  const formattedTransactions = transactions.map(listItem => {
+  const transactions = allTransactions.map(listItem => {
     const category = categories.find(tag => tag.id === listItem.category_id);
     const newTransactionFormat = { ...listItem, category };
     delete newTransactionFormat.category_id;
     return newTransactionFormat;
   });
 
-  // const fullGetResponse =
+  const balance = await transactionsRepository.getBalance();
 
-  return response.json(formattedTransactions);
+  const fullGetResponse = { transactions, balance };
+
+  return response.json(fullGetResponse);
 });
 
 transactionsRouter.post('/', async (request, response) => {
-  const { title, value, type, category } = request.body;
+  try {
+    const { title, value, type, category } = request.body;
 
-  const createTransaction = new CreateTransactionService();
+    const createTransaction = new CreateTransactionService();
 
-  const transaction = await createTransaction.execute({
-    title,
-    value,
-    type,
-    category,
-  });
+    const transaction = await createTransaction.execute({
+      title,
+      value,
+      type,
+      category,
+    });
 
-  return response.json(transaction);
+    return response.json(transaction);
+  } catch (err) {
+    return response.status(400).send({ message: err.message, status: 'error' });
+  }
 });
 
 transactionsRouter.delete('/:id', async (request, response) => {
