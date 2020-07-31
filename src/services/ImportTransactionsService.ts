@@ -9,7 +9,6 @@ class ImportTransactionsService {
   async execute(fileName: string): Promise<Transaction[]> {
     //
     const csvFilePath = path.join(uploadConfig.directory, fileName);
-    // const csvFilePath = path.resolve(__dirname, '..', '..', 'tmp', fileName);
     const readCSVStream = fs.createReadStream(csvFilePath);
 
     const parseStream = csvParse({
@@ -58,16 +57,6 @@ class ImportTransactionsService {
 
     await fs.promises.unlink(csvFilePath);
 
-    // const transactions = objectData.map(object => {
-    //   const { title, value, type, category } = object;
-    //   const transaction: Transaction = createTransaction.execute({
-    //     title,
-    //     value,
-    //     type,
-    //     category,
-    //   });
-    //   return transaction;
-    // });
     return transactions;
   }
 }
